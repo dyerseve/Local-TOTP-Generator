@@ -49,6 +49,11 @@ const nextTOTPElem      = document.getElementById("nextTOTP");
 const copyBtn           = document.getElementById("copyBtn");
 const shareBtn          = document.getElementById("shareBtn");
 
+const skewHoursInput = document.getElementById("skewHours");
+const skewMinutesInput = document.getElementById("skewMinutes");
+const skewSecondsInput = document.getElementById("skewSeconds");
+const resetSkewBtn = document.getElementById("resetSkew");
+
 /***************************************************
  * 3. State & Config
  ***************************************************/
@@ -56,6 +61,7 @@ let isAdvancedOpen   = false; // Tracks advanced settings visibility
 let onlineTimeOffset = 0;     // Offset from fetched online time
 let totpIntervalId   = null;  // Interval ID for TOTP updates
 let fetchAnimationId = null;  // Interval for "fetching" text animation
+let manualTimeSkewMs = 0; // Manual time skew in milliseconds
 
 /***************************************************
  * 4. Utility: Base32 Decode (RFC 4648)
@@ -130,7 +136,7 @@ async function generateTOTP(secret, timeNow, digits, period, algorithm) {
  * 7. Get Current Unix Time
  ***************************************************/
 function getUnixTime() {
-  return Math.floor((Date.now() + onlineTimeOffset) / 1000);
+  return Math.floor((Date.now() + onlineTimeOffset + manualTimeSkewMs) / 1000);
 }
 
 /***************************************************
@@ -256,6 +262,9 @@ function updateURLParams() {
   params.set("period",     periodInput.value);
   params.set("algorithm",  algorithmSelect.value);
   params.set("timeSource", timeSourceSelect.value);
+  params.set("skewH", skewHoursInput.value);
+  params.set("skewM", skewMinutesInput.value);
+  params.set("skewS", skewSecondsInput.value);
 
   const newHash = "#" + params.toString();
   window.history.replaceState(null, "", window.location.pathname + newHash);
@@ -283,6 +292,17 @@ function loadConfigFromURL() {
   if (params.has("timeSource")) {
     timeSourceSelect.value = params.get("timeSource");
   }
+  if (params.has("skewH")) {
+    skewHoursInput.value = params.get("skewH");
+  }
+  if (params.has("skewM")) {
+    skewMinutesInput.value = params.get("skewM");
+  }
+  if (params.has("skewS")) {
+    skewSecondsInput.value = params.get("skewS");
+  }
+  // Calculate initial skew from URL params
+  calculateTimeSkew();
 }
 
 /***************************************************
@@ -314,6 +334,16 @@ function openOrCloseAdvancedPanel() {
   }
 }
 
+function calculateTimeSkew() {
+    const hours = parseInt(skewHoursInput.value, 10) || 0;
+    const minutes = parseInt(skewMinutesInput.value, 10) || 0;
+    const seconds = parseInt(skewSecondsInput.value, 10) || 0;
+    
+    // Convert to milliseconds
+    manualTimeSkewMs = (hours * 3600 + minutes * 60 + seconds) * 1000;
+}
+
+
 /***************************************************
  * 15. Event Listeners
  ***************************************************/
@@ -328,7 +358,7 @@ toggleAdvanced.addEventListener("click", () => {
 
 timeSourceSelect.addEventListener("change", handleTimeSourceChange);
 
-[secretInput, digitsInput, periodInput, algorithmSelect].forEach(el => {
+[secretInput, digitsInput, periodInput, algorithmSelect, skewHoursInput, skewMinutesInput, skewSecondsInput].forEach(el => {
   el.addEventListener("input", () => {
     updateURLParams();
     updateTOTPDisplay();
@@ -359,6 +389,24 @@ shareBtn.addEventListener("click", async () => {
   } catch (err) {
     console.error("Failed to copy URL:", err);
   }
+});
+
+
+[skewHoursInput, skewMinutesInput, skewSecondsInput].forEach(el => {
+    el.addEventListener("input", () => {
+        calculateTimeSkew();
+        updateURLParams();
+        updateTOTPDisplay();
+    });
+});
+
+resetSkewBtn.addEventListener("click", () => {
+    skewHoursInput.value = 0;
+    skewMinutesInput.value = 0;
+    skewSecondsInput.value = 0;
+    manualTimeSkewMs = 0;
+    updateURLParams();
+    updateTOTPDisplay();
 });
 
 /***************************************************

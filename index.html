@@ -104,6 +104,28 @@
         </select>
       </div>
     </div>
+    
+    <!-- Time Skew Override -->
+    <div class="form-group">
+      <label>Time Skew (offset from current time)</label>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div>
+          <input type="number" id="skewHours" value="0" style="width: 60px;" />
+          <small>Hours</small>
+        </div>
+        <div>
+          <input type="number" id="skewMinutes" value="0" style="width: 60px;" />
+          <small>Minutes</small>
+        </div>
+        <div>
+          <input type="number" id="skewSeconds" value="0" style="width: 60px;" />
+          <small>Seconds</small>
+        </div>
+        <button type="button" id="resetSkew" class="btn-secondary">Reset</button>
+      </div>
+      <small>Use positive values to simulate future time, negative for past time</small>
+    </div>
+    
 
     <!-- TOTP Display: Current Code, Next Code, and Countdown -->
     <div class="totp-section">
