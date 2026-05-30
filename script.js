@@ -49,11 +49,6 @@ const nextTOTPElem      = document.getElementById("nextTOTP");
 const copyBtn           = document.getElementById("copyBtn");
 const shareBtn          = document.getElementById("shareBtn");
 
-const timezoneSelect    = document.getElementById("timezone"); // TimeZone Mod
-
-const manualTimeInput = document.getElementById("manualTime"); // Manual Time Offset Mod
-const clearManualTimeBtn = document.getElementById("clearManualTime"); // Manual Time Offset Mod
-
 /***************************************************
  * 3. State & Config
  ***************************************************/
@@ -61,8 +56,7 @@ let isAdvancedOpen   = false; // Tracks advanced settings visibility
 let onlineTimeOffset = 0;     // Offset from fetched online time
 let totpIntervalId   = null;  // Interval ID for TOTP updates
 let fetchAnimationId = null;  // Interval for "fetching" text animation
-let selectedTimezone = "UTC";  // TimeZone Mod
-let manualTimeOffset = 0; // Manual Time Offset Mod
+
 /***************************************************
  * 4. Utility: Base32 Decode (RFC 4648)
  ***************************************************/
@@ -136,24 +130,7 @@ async function generateTOTP(secret, timeNow, digits, period, algorithm) {
  * 7. Get Current Unix Time
  ***************************************************/
 function getUnixTime() {
-    // If manual time is set, use it
-    if (manualTimeInput.value) {
-        const manualTimestamp = new Date(manualTimeInput.value).getTime();
-        return Math.floor(manualTimestamp / 1000);
-    }
-    
-    // Otherwise use device/online time
-    let now = Date.now() + onlineTimeOffset;
-    
-    // Apply timezone offset if needed
-    if (timeSourceSelect.value === "device" && timezoneSelect.value !== "UTC") {
-        const date = new Date(now);
-        const utcDate = new Date(date.toLocaleString('en-US', { timeZone: timezoneSelect.value }));
-        const offset = date.getTime() - utcDate.getTime();
-        now = now - offset;
-    }
-    
-    return Math.floor(now / 1000);
+  return Math.floor((Date.now() + onlineTimeOffset) / 1000);
 }
 
 /***************************************************
@@ -279,10 +256,7 @@ function updateURLParams() {
   params.set("period",     periodInput.value);
   params.set("algorithm",  algorithmSelect.value);
   params.set("timeSource", timeSourceSelect.value);
-  params.set("timezone", timezoneSelect.value);
-  if (manualTimeInput.value) {
-    params.set("manualTime", manualTimeInput.value);
-  }
+
   const newHash = "#" + params.toString();
   window.history.replaceState(null, "", window.location.pathname + newHash);
 }
@@ -308,12 +282,6 @@ function loadConfigFromURL() {
   }
   if (params.has("timeSource")) {
     timeSourceSelect.value = params.get("timeSource");
-  }
-  if (params.has("timezone")) {
-    timezoneSelect.value = params.get("timezone");
-  }
-  if (params.has("manualTime")) {
-    manualTimeInput.value = params.get("manualTime");
   }
 }
 
@@ -360,7 +328,7 @@ toggleAdvanced.addEventListener("click", () => {
 
 timeSourceSelect.addEventListener("change", handleTimeSourceChange);
 
-[secretInput, digitsInput, periodInput, algorithmSelect, timezoneSelect].forEach(el => {
+[secretInput, digitsInput, periodInput, algorithmSelect].forEach(el => {
   el.addEventListener("input", () => {
     updateURLParams();
     updateTOTPDisplay();
@@ -392,19 +360,6 @@ shareBtn.addEventListener("click", async () => {
     console.error("Failed to copy URL:", err);
   }
 });
-
-manualTimeInput.addEventListener("input", () => {
-    updateURLParams();
-    updateTOTPDisplay();
-});
-
-clearManualTimeBtn.addEventListener("click", () => {
-    manualTimeInput.value = "";
-    updateURLParams();
-    updateTOTPDisplay();
-});
-
-
 
 /***************************************************
  * 16. Initialization

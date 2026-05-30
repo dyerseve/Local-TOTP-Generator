@@ -62,23 +62,6 @@
       <small id="timeSourceStatus" class="time-status">Using device time</small>
     </div>
 
-<!-- START NEW SECTION -->
-  <div class="form-group">
-      <label for="timezone">Timezone Override</label>
-      <select id="timezone">
-          <option value="UTC">UTC</option>
-          <option value="America/New_York">Eastern Time</option>
-          <option value="America/Chicago">Central Time</option>
-          <option value="America/Denver">Mountain Time</option>
-          <option value="America/Los_Angeles">Pacific Time</option>
-          <option value="Europe/London">London</option>
-          <option value="Europe/Paris">Paris</option>
-          <option value="Asia/Tokyo">Tokyo</option>
-          <!-- Add more timezones as needed -->
-      </select>
-  </div>
-<!-- END NEW SECTION -->
-
     <!-- Secret Input Field -->
     <div class="form-group">
       <label for="secret">Secret</label>
@@ -119,14 +102,6 @@
           <option value="SHA-256">SHA-256</option>
           <option value="SHA-512">SHA-512</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label for="manualTime">Manual Time Override</label>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <input type="datetime-local" id="manualTime" />
-          <button type="button" id="clearManualTime" class="btn-secondary">Clear</button>
-        </div>
-        <small>Leave empty to use automatic time</small>
       </div>
     </div>
 
